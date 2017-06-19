@@ -1,0 +1,6 @@
+name = Ding Event Rooms
+description = Implement rooms field for Event CT
+core = 7.x
+package = easyOPAC
+project = ding_event_rooms
+dependencies[] = ding_event
