@@ -1,0 +1,29 @@
+<?php
+/**
+ * @file
+ * Define actions on module (un)install or (en/dis)able.
+ */
+
+/**
+ * Actions on module enable.
+ */
+function ding_event_rooms_enable() {
+  _ding_event_add_to_group();
+}
+
+/**
+ * Add ding_event_rooms field to the Tagging group.
+ */
+function _ding_event_add_to_group() {
+  $groups = field_group_read_groups(
+    array(
+      'entity_type' => 'node',
+      'bundle' => 'ding_event',
+      'mode' => 'form'
+    )
+  );
+
+  $group_content = $groups['node']['ding_event']['form']['group_ding_event_tagging'];
+  $group_content->children[] = 'field_ding_event_rooms';
+  field_group_group_save($group_content);
+}
