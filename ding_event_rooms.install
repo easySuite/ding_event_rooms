@@ -5,16 +5,31 @@
  */
 
 /**
+ * Implements hook_enable().
+ *
  * Actions on module enable.
  */
 function ding_event_rooms_enable() {
   _ding_event_add_to_group();
+
+  // Because of pushing out of ding_event_rooms field from ding_event's tagging
+  // fieldgroup, set a random value in strongarm variable exported into this module in
+  // order to have this feature permanently overriden so we can revert this feature.
+  variable_set('ding_event_rooms_random', rand());
+}
+
+/**
+ * Implements hook_disable().
+ */
+function ding_event_rooms_disable() {
+  variable_del('ding_event_rooms_random');
 }
 
 /**
  * Add ding_event_rooms field to the Tagging group.
  */
 function _ding_event_add_to_group() {
+  // Positioning field to event node form's tagging group.
   $groups = field_group_read_groups(
     array(
       'entity_type' => 'node',
@@ -25,5 +40,19 @@ function _ding_event_add_to_group() {
 
   $group_content = $groups['node']['ding_event']['form']['group_ding_event_tagging'];
   $group_content->children[] = 'field_ding_event_rooms';
+  field_group_group_save($group_content);
+
+  // Positioning field to left group of default display of event node.
+  $display_groups = field_group_read_groups(
+    array(
+      'entity_type' => 'node',
+      'bundle' => 'ding_event',
+      'mode' => 'default',
+    )
+  );
+
+  $group_content = $display_groups['node']['ding_event']['default']['group_left'];
+  $group_content->children[] = 'field_ding_event_rooms';
+
   field_group_group_save($group_content);
 }

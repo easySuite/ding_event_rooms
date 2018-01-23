@@ -1,5 +1,49 @@
 <?php
 /**
  * @file
- * Drupal needs this blank file.
+ * Code for the Ding Event Rooms feature.
  */
+
+include_once 'ding_event_rooms.features.inc';
+
+/**
+ * Implements hook_post_features_revert().
+ */
+function ding_event_rooms_post_features_revert($component) {
+  /**
+   * Every time when this feature will be reverted 'field_ding_event_rooms'
+   * field will be placed into the correct fieldgroup.
+   */
+
+  // Positioning field to event node form's tagging group.
+  $groups = field_group_read_groups(
+    array(
+      'entity_type' => 'node',
+      'bundle' => 'ding_event',
+      'mode' => 'form'
+    )
+  );
+
+  $group_content = $groups['node']['ding_event']['form']['group_ding_event_tagging'];
+  $group_content->children[] = 'field_ding_event_rooms';
+  field_group_group_save($group_content);
+
+  // Positioning field to left group of default display of event node.
+  $display_groups = field_group_read_groups(
+    array(
+      'entity_type' => 'node',
+      'bundle' => 'ding_event',
+      'mode' => 'default',
+    )
+  );
+
+  $group_content = $display_groups['node']['ding_event']['default']['group_left'];
+  $group_content->children[] = 'field_ding_event_rooms';
+
+  field_group_group_save($group_content);
+
+  // Because of pushing out of ding_event_rooms field from ding_event's tagging
+  // fieldgroup, set a random value in variable exported into this module in
+  // order to have this feature permanently overriden so we can revert this feature.
+  variable_set('ding_event_rooms_random', rand());
+}
