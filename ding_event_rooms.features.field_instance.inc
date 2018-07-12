@@ -18,11 +18,10 @@ function ding_event_rooms_field_default_field_instances() {
     'description' => '',
     'display' => array(
       'default' => array(
-        'label' => 'inline',
-        'module' => 'taxonomy',
+        'label' => 'above',
         'settings' => array(),
-        'type' => 'taxonomy_term_reference_link',
-        'weight' => 7,
+        'type' => 'hidden',
+        'weight' => 0,
       ),
       'search_result' => array(
         'label' => 'above',
@@ -57,7 +56,7 @@ function ding_event_rooms_field_default_field_instances() {
         'match_operator' => 'CONTAINS',
       ),
       'type' => 'options_select',
-      'weight' => 14,
+      'weight' => 7,
     ),
   );
 
