@@ -50,6 +50,8 @@ function ding_event_rooms_post_features_revert($component) {
   // This forces us to update all fields weight that are part of this group.
   $field_instances = field_info_instances('node', 'ding_event');
   $library_field_weight = $field_instances['og_group_ref']['display']['default']['weight'];
+  // Weight counter starts with a threshold of two, since we play against
+  // two fields that are above anything else - library and rooms.
   $weight_counter = 2;
   foreach (array_keys($field_instances) as $field_name) {
     // Skip fields that are not part of the group.
@@ -60,13 +62,16 @@ function ding_event_rooms_post_features_revert($component) {
     $default_display_field = &$field_instances[$field_name]['display']['default'];
 
     switch ($field_name) {
+      // Skip library field, it's position is a reference value.
       case 'og_group_ref':
         continue(2);
+        break;
+      // Assign rooms field weight as an incremented value of the library field.
       case 'field_ding_event_rooms':
         $default_display_field['weight'] = $library_field_weight + 1;
         break;
       default:
-        // Skip fields that are above the library field.
+        // Skip fields that are in weight above the library field.
         if ($default_display_field['weight'] < $library_field_weight) {
           continue(2);
         }
