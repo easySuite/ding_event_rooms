@@ -10,10 +10,11 @@ include_once 'ding_event_rooms.features.inc';
  * Implements hook_post_features_revert().
  */
 function ding_event_rooms_post_features_revert($component) {
-  /**
-   * Every time when this feature will be reverted 'field_ding_event_rooms'
-   * field will be placed into the correct fieldgroup.
-   */
+  // Every time field instance of this module will be reverted,
+  // place the field into correct field group.
+  if ('field_instance' !== $component) {
+    return;
+  }
 
   // Positioning field to event node form's tagging group.
   $groups = field_group_read_groups(
@@ -37,31 +38,48 @@ function ding_event_rooms_post_features_revert($component) {
     )
   );
 
+  // Insert the field into the target group. This doesn't care about the
+  // order within the group, yet.
   $group_content = $display_groups['node']['ding_event']['default']['group_left'];
-  $group_content->children[] = 'field_ding_event_rooms';
+  if (!in_array('field_ding_event_rooms', $group_content->children)) {
+    $group_content->children[] = 'field_ding_event_rooms';
+    field_group_group_save($group_content);
+  }
 
-  field_group_group_save($group_content);
+  // Set the correct display order. We want it to be below Library field.
+  // This forces us to update all fields weight that are part of this group.
+  $field_instances = field_info_instances('node', 'ding_event');
+  $library_field_weight = $field_instances['og_group_ref']['display']['default']['weight'];
+  $weight_counter = 2;
+  foreach (array_keys($field_instances) as $field_name) {
+    // Skip fields that are not part of the group.
+    if (!in_array($field_name, $group_content->children)) {
+      continue;
+    }
+
+    $default_display_field = &$field_instances[$field_name]['display']['default'];
+
+    switch ($field_name) {
+      case 'og_group_ref':
+        continue(2);
+      case 'field_ding_event_rooms':
+        $default_display_field['weight'] = $library_field_weight + 1;
+        break;
+      default:
+        // Skip fields that are above the library field.
+        if ($default_display_field['weight'] < $library_field_weight) {
+          continue(2);
+        }
+        $default_display_field['weight'] = $library_field_weight + $weight_counter++;
+    }
+
+    field_update_instance($field_instances[$field_name]);
+  }
 
   // Because of pushing out of ding_event_rooms field from ding_event's tagging
-  // fieldgroup, set a random value in variable exported into this module in
-  // order to have this feature permanently overriden so we can revert this feature.
+  // field group, set a random value in variable exported into this module in
+  // order to have this feature permanently overridden so we can revert this feature.
   variable_set('ding_event_rooms_random', rand());
-}
-
-/**
- * Implements hook_preprocess_field().
- */
-function ding_event_rooms_preprocess_field(&$variables) {
-  /*
-   * Pass 'field_ding_event_rooms' renderable array to be customly rendered
-   * in custom 'field_og_group_ref' field template.
-   */
-  if ($variables['element']['#field_name'] == 'og_group_ref') {
-    $node = $variables['element']['#object'];
-    $rooms = field_view_field('node', $node, 'field_ding_event_rooms');
-    $rooms['#label_display'] = 'inline';
-    $variables['rooms_field'] = $rooms;
-  }
 }
 
 /**
