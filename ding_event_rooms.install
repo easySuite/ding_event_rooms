@@ -38,7 +38,7 @@ function _ding_event_add_to_group() {
     )
   );
 
-  $group_content = $groups['node']['ding_event']['form']['group_ding_event_tagging'];
+  $group_content = $groups['node']['ding_event']['form']['group_ding_event_date_loc_price'];
   $group_content->children[] = 'field_ding_event_rooms';
   field_group_group_save($group_content);
 

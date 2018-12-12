@@ -88,21 +88,14 @@ function ding_event_rooms_post_features_revert($component) {
 }
 
 /**
- * Implements hook_theme_registry_alter().
+ * Implements hook_field_group_info_alter().
  */
-function ding_event_rooms_theme_registry_alter(&$theme_registry) {
-  // Defined path to the current module.
-  $path = drupal_get_path('module', 'ding_event_rooms');
-  // Find all .tpl.php files in this module's folder recursively.
-  $template_file_objects = drupal_find_theme_templates($theme_registry, '.tpl.php', $path);
-  // Iterate through all found template file objects.
-  foreach ($template_file_objects as $key => $template_file_object) {
-    // If the template has not already been overridden by a theme.
-    if (!isset($theme_registry[$key]['theme path']) || !preg_match('#/themes/#', $theme_registry[$key]['theme path'])) {
-      // Alter the theme path and template elements.
-      $theme_registry[$key]['theme path'] = $path;
-      $theme_registry[$key] = array_merge($theme_registry[$key], $template_file_object);
-      $theme_registry[$key]['type'] = 'module';
-    }
+function ding_event_rooms_field_group_info_alter(&$groups) {
+  if (!empty($groups['group_ding_event_date_loc_price|node|ding_event|form'])) {
+    $groups['group_ding_event_date_loc_price|node|ding_event|form']->data['children'][] = 'field_ding_event_rooms';
+  }
+
+  if (!empty($groups['group_left|node|ding_event|default'])) {
+    $groups['group_left|node|ding_event|default']->data['children'][] = 'field_ding_event_rooms';
   }
 }
